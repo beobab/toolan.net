@@ -1,0 +1,339 @@
+/*------------------------------------*\
+    RESET
+\*------------------------------------*/
+/* http://meyerweb.com/eric/tools/css/reset/ 
+    v2.0b1 | 201101 
+    NOTE:WORK IN PROGRESS
+    USE WITH CAUTION AND TEST WITH ABANDON */
+
+html,body,div,span,applet,object,iframe,
+h1,h2,h3,h4,h5,h6,p,blockquote,pre,
+a,abbr,acronym,address,big,cite,code,
+del,dfn,em,img,ins,kbd,q,s,samp,
+small,strike,strong,sub,sup,tt,var,
+b,u,i,center,
+dl,dt,dd,ol,ul,li,
+fieldset,form,label,legend,
+table,caption,tbody,tfoot,thead,tr,th,td,
+article,aside,canvas,details,figcaption,figure,
+footer,header,hgroup,menu,nav,section,summary,
+time,mark,audio,video{
+    margin:0;
+    padding:0;
+    border:0;
+    outline:0;
+    font-size:100%;
+    font:inherit;
+    vertical-align:baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article,aside,details,figcaption,figure,
+footer,header,hgroup,menu,nav,section{
+    display:block;
+}
+body{
+    line-height:1;
+}
+ol,ul{
+    list-style:none;
+}
+blockquote,q{
+    quotes:none;
+}
+blockquote:before,blockquote:after,
+q:before,q:after{
+    content:’’;
+    content:none;
+}
+/* remember to define visible focus styles! 
+:focus{
+    outline:?????;
+} */
+
+/* remember to highlight inserts somehow! */
+ins{
+    text-decoration:none;
+}
+del{
+    text-decoration:line-through;
+}
+
+table{
+    border-collapse:collapse;
+    border-spacing:0;
+}
+
+
+
+
+
+/*------------------------------------*\
+    $MAIN
+\*------------------------------------*/
+/* GO! */
+
+/* PRINTING */
+@media print
+{    
+    #fixedHeader[data-mode=print]
+    {
+        display: none !important;
+    }
+    #list {
+        padding-top: 0px !important;
+    }
+}
+
+body {
+    font-family: 'Muli', sans-serif;
+}
+
+h1 {
+    font-size: 1.55em;
+    padding-bottom: 10px;
+}
+
+input.description {
+    font-size: 100%;
+    width: 300px;
+}
+
+.delete {
+    padding-left: 25px;
+    color: #DDD;
+}
+.delete:hover {
+    color: rgb(221, 103, 31);
+}
+
+#fixedHeader {
+    width: 100%;
+    position: fixed;
+    background-color: white;
+    -webkit-box-shadow: 0px 5px 5px 0px rgba(0,0,0,0.05);
+    -moz-box-shadow: 0px 5px 5px 0px rgba(0,0,0,0.05);
+    box-shadow: 0px 5px 25px 0px rgba(0,0,0,0.05);
+    padding: 10px;
+}
+
+#index {
+    position: fixed;
+    right: 15px;
+    top: 100px;
+}
+
+/* DATA MODE CHANGE VISIBILITY */
+
+#index[data-mode='shopOrder'],
+#index[data-mode='homeOrder'],
+#index[data-mode='print'] {
+    display: none;
+}
+
+#list[data-mode='print'] {
+    font-size: 9pt;
+}
+
+#list[data-mode='alphabetical'] .move {
+    display: none;
+}
+
+#fixedHeader[data-mode='shopOrder'] .fontControls,
+#fixedHeader[data-mode='homeOrder'] .fontControls,
+#fixedHeader[data-mode='alphabetical'] .fontControls {
+    display: none;
+}
+
+#fixedHeader[data-mode='print'] .fontControls {
+    display: block;
+    position: absolute;
+    left: 375px;
+    top: 44px;
+}
+.fontControls a {
+    text-decoration: none;    
+}
+
+#index span {
+    display: block;
+    padding-bottom: 13px; /* This is overridden in code */
+}
+
+.wait-loading {
+    position: fixed;
+    top: 100px;
+    left: 200px;
+    text-align: center;
+}
+
+.wait-loading-text {
+    display: block;
+    padding-top: 20px;
+}
+
+#list {
+    padding-top: 75px;
+}
+
+.item div {
+    display: inline-block;
+}
+
+div.addNewItem {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+    width: 250px;
+}
+
+div.addNewItem input {
+    font-size: 100%;
+    width: 100%;
+}
+
+.zero {
+    color: #000;
+}
+
+#list .item .description:not(.zero) {
+	color: #f00;
+}
+
+.move {
+    padding-left: 10px;
+    color: rgb(59, 139, 229);
+}
+#moveItemContainer {
+    position: fixed;
+
+    background-color: white;
+    -webkit-box-shadow: 0px 5px 5px 0px rgba(0,0,0,0.05);
+    -moz-box-shadow: 0px 5px 5px 0px rgba(0,0,0,0.05);
+    box-shadow: 0px 5px 25px 0px rgba(0,0,0,0.05);
+
+    right: 0px;
+    top: 200px;
+    width: 500px;
+    padding: 10px;
+}
+#moveInstruction {
+    color: rgb(59, 139, 229);
+    font-size: 0.8em;
+    padding-left: 75px;
+}
+#list .item {
+    border-top: 3px solid rgba(0, 0, 0, 0.0);
+}
+#list.showMoveMarker .item:hover {
+    border-top: 3px dashed red;
+}
+.empty { 
+    display: none; 
+}
+.edit {
+    padding-left: 10px;
+    color: rgb(59, 139, 229);;
+}
+
+.finish-edit {
+    padding-left: 10px;
+    color: green;
+}
+.cancel-edit {
+    padding-left: 10px;
+    color: red;
+}
+
+#clearAmounts {
+    float: right;
+    padding-right: 20px;
+}
+
+.amount {
+    padding: 10px 15px;
+    border: 1px solid rgb(59, 139, 229);
+    border-radius: 5px;
+    display: inline-block;
+    margin: 5px;
+}
+
+/* Shopping Printable List */
+.leftColumn {
+    float: left;
+    padding-right: 20px;
+    padding-left: 10px;
+}
+
+/* Change Password */
+
+a#changepassword {
+    font-size: 9pt;
+    position: absolute;
+    top: 17px;
+    left: 200px;
+}
+
+#change-pass {
+    position: relative;
+    left: 50px;
+    top: 85px;
+}
+#change-pass field {
+    display: block;
+    position: relative;
+    padding-bottom: 10px;
+}
+#change-pass field input {
+    position: absolute;
+    left: 150px;
+}
+#change-pass-button {
+    padding-top: 10px;
+}
+#change-pass-err {
+    padding-top: 20px;
+}
+
+/* Login Button */
+
+
+
+#login input {
+    margin-right: 20px;
+}
+
+#login-err {
+    position: fixed;
+    top: 100px;
+    left: 200px;
+}
+.text-danger { 
+    color: rgb(179, 59, 59); 
+}
+
+.btn {
+  background: #3498db;
+  background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
+  background-image: -moz-linear-gradient(top, #3498db, #2980b9);
+  background-image: -ms-linear-gradient(top, #3498db, #2980b9);
+  background-image: -o-linear-gradient(top, #3498db, #2980b9);
+  background-image: linear-gradient(to bottom, #3498db, #2980b9);
+  -webkit-border-radius: 20;
+  -moz-border-radius: 20;
+  border-radius: 20px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 16px;
+  padding: 5px 30px 5px 30px;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #3cb0fd;
+  background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+  text-decoration: none;
+}

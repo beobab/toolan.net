@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+
+		<title>Shopalicious</title>
+		<meta name="description" content="Shopalicious - Organise your shopping list">
+		<meta name="author" content="Jonathan">
+		<meta name="viewport" content="initial-scale=1">
+
+		<link rel="stylesheet" href="css/shop.css?v=1.1">
+		<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+		<link href='http://fonts.googleapis.com/css?family=Muli' rel='stylesheet' type='text/css'>
+		<!--[if IE]>
+			<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+	</head>
+
+	<body id="home">
+		<div id="fixedHeader" data-mode="alphabetical">
+			<h1>Shopalicious</h1>
+			<div id="login" style="display: none;">
+				<label for="login-username">Email</label>
+				<input type="text" id="login-username" />
+				<label for="login-password">Password</label>
+				<input type="password" id="login-password" />
+				<label for="login-rememberme">Remember Me</label>
+				<input type="checkbox" id="login-rememberme" />
+				<a class="btn" id="btnLogin" href>Login</a>
+			</div>
+			<div id="interface" style="display: none;">
+				<a id='alphabetical' href='' class='ordering'>Alphabetical</a>
+				<a id='homeOrder' href='' class='ordering'>Home</a>
+				<a id='shopOrder' href='' class='ordering'>Shop</a>
+				<a id='print' href='' class='printing'>Print</a>
+				<a id='changepassword' href='' class=''>Change Password</a>
+				<div class='addNewItem'>
+					<input type='text' id='addNew' placeholder='Enter new items here'></input>
+				</div>
+				<a id='clearAmounts' href='' class='clearing'>Clear</a>
+				<div class="fontControls">
+					<span>Font size</span>
+					<a id="increaseFont" href="">+</a>
+					<a id="decreaseFont" href="">-</a>
+				</div>
+			</div>
+		</div>
+		<div id="login-err" style="display: none;">
+			<span class="fa-stack fa-lg">
+			  <i class="fa fa-lock fa-stack-1x"></i>
+			  <i class="fa fa-ban fa-stack-2x text-danger"></i>
+			</span>
+			<span id="login-err-text">Unable to log in. Please try again.</span>
+		</div>
+		<div id="change-pass" style="display: none;">
+			<field>
+				<label for="change-pass-oldpassword">Old Password</label>
+				<input type="password" id="change-pass-oldpassword" />
+			</field>
+			<field>
+				<label for="change-pass-newpassword">Password</label>
+				<input type="password" id="change-pass-newpassword" />
+			</field>
+			<div id="change-pass-button">
+				<a class="btn" id="btnChangePass" href>Change Password</a>
+			</div>
+			<div id="change-pass-err" style="display: none;">
+				<span class="fa-stack fa-lg">
+				  <i class="fa fa-lock fa-stack-1x"></i>
+				  <i class="fa fa-ban fa-stack-2x text-danger"></i>
+				</span>
+				<span id="change-pass-err-text">Unable to change password. Please try again.</span>
+			</div>
+		</div>
+		<div id="index"></div>
+		<div id="moveItemContainer" class="empty">
+			<span id="moveInstruction">Click on the item you want <span id="thisOne">these</span> to appear next to. <a id="moveCancel" href="">Cancel</a></span>
+		</div>
+		<div id="list" style="display: none;">
+			<div class="wait-loading">
+				<i class="wait-loading-icon fa fa-refresh fa-spin fa-3x"></i>
+				<span class="wait-loading-text">Please Wait - Loading</span>
+			</div>
+		</div>
+
+		<!-- Firebase App is always required and must be first -->
+		<script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-app.js"></script>
+
+		<!-- Add additional services that you want to use -->
+		<script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-auth.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-database.js"></script>
+<!-- 
+		<script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-firestore.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-messaging.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-functions.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-storage.js"></script>
+ -->
+		
+		<script src='https://code.jquery.com/jquery-2.1.1.min.js'></script>
+		<script src='https://code.jquery.com/color/jquery.color-2.1.2.min.js'></script>
+		<script src="js/shop.js"></script>
+	</body>
+</html>
