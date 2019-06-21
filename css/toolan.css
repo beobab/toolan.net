@@ -1,0 +1,17 @@
+.container {
+	position: relative;
+	top: 25px;
+	left: 25px;
+}
+
+#jigsaw_img {
+	margin-left: 25px;
+	margin-bottom: 15px;
+}
+
+h1 {
+	font-family: 'Kaushan Script', cursive;
+	text-shadow: 1px 1px #000;
+	color: rgb(4, 80, 4);
+	font-size: 4.5em;
+}
