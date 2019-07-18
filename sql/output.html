@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Sql Output Variables</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+  </head>
+<body>
+<pre>
+Add a new row in SQL, and get the identity
+==========================================
+
+CREATE TABLE mytable (
+	id int identity(1,1) NOT NULL,
+	col1 nvarchar(10) NULL
+);
+
+
+tl;dr
+DECLARE @ids TABLE (id int)
+INSERT mytable (col1)
+SELECT name 
+    OUTPUT INSERTED.id INTO @ids
+FROM (VALUES ('mo'), ('abel'), ('obed'), ('grace'), ('charles'), ('zephania'), ('Xia')
+) AS _(name);
+SELECT * FROM @ids;
+
+
+Longer version for patient, wise, clever folk:
+
+
+MAX
+---
+
+I've often seen folk getting the newly inserted row like this:
+
+INSERT mytable (col1) VALUES ('bob');
+SELECT max(id) FROM mytable;
+
+Don't do this. It's bad. If two people insert at the same time, SQL could easily give you back the wrong id.
+
+INSERT mytable (col1) VALUES ('bob');
+                                                 INSERT mytable(col1) VALUES ('cyril');
+SELECT max(id) FROM mytable;
+                                                 SELECT max(id) FROM mytable;
+
+Boom. You've both got cyril's id as the result of your insert.
+
+
+@@IDENTITY
+----------
+
+So people learned to use @@IDENTITY, which returns the last identity column your connection has inserted.
+
+INSERT mytable (col1) VALUES ('bob');
+SELECT @@IDENTITY;
+
+But that had problems of it's own.
+
+Consider the following table and trigger:
+
+CREATE TABLE myauditlog (
+	auditId int IDENTITY(1000, 1),
+	auditCol1 nvarchar(10) NULL,
+	auditCreateDate datetime DEFAULT (getutcdate())
+);
+
+CREATE TRIGGER auditTrigger ON mytable
+FOR INSERT
+AS
+INSERT myauditlog (auditCol1)
+SELECT col1 FROM INSERTED;
+
+Now when jonny insert puts his value in, he gets an entirely different id, which might not even exist in
+the table he's inserting in. The last identity he inserted was in the trigger (which starts at 1000).
+
+INSERT mytable (col1) VALUES ('jonny');
+SELECT @@IDENTITY;
+
+
+IDENT_CURRENT
+-------------
+
+It returns the last created id for any table you specify, regardless of whether it was you, your boss, 
+uncle cobley, or a small hairy creature from alpha centaurii.
+
+SELECT IDENT_CURRENT ('mytable');  
+
+We don't even go here. This is almost as bad as MAX.
+
+
+SCOPE_IDENTITY
+--------------
+
+Finally, we get one that is pretty darn reliable. It's safe to use this one.
+
+INSERT mytable VALUES ('rosie');
+SELECT SCOPE_IDENTITY()
+
+Historically, it failed as a result of a bug in SQL some time between 2005 and 2008 (I'm hazy on the details, 
+but it was a long time ago, and they fixed it), where it could return wrong result if it ran with a parallel 
+query plan, and you could get round it by using the (maxdop 1) query hint.
+
+But that doesn't allow for multiple row inserts. How do you get a list of inserted ids?
+
+
+OUTPUT CLAUSE
+-------------
+
+I'm glad you asked. If you hadn't, then this article would be relatively pointless. If you read the tl;dr at the
+top of the page, you might have guessed where I was going. Because you're very clever.
+
+The idea is: You have a separate table ready to take ids.
+
+DECLARE @ids TABLE (
+	insertedId int,
+	insertedCol1 nvarchar(10)
+);
+
+You do the insert, and have access to the special INSERTED table which exists for triggers.
+
+INSERT mytable (col1)
+SELECT name 
+    OUTPUT INSERTED.id, INSERTED.col1 INTO @ids (insertedId, insertedCol1)
+FROM (
+    VALUES ('mo'), ('abel'), ('obed'), ('grace'), ('charles'), ('zephania'), ('Xia')
+) AS _(name);
+
+SELECT * FROM @ids;
+
+You can fill in a table variable or a new table with the values. I'm using a table variable because I can.
+
+If you don't specify the columns in your table, make sure it's got the same number of columns as you output.
+
+DECLARE @ids TABLE (id int);
+INSERT mytable (col1)
+SELECT name 
+    OUTPUT INSERTED.id INTO @ids
+FROM (
+    VALUES ('mo'), ('abel'), ('obed'), ('grace'), ('charles'), ('zephania'), ('Xia')
+) AS _(name);
+SELECT * FROM @ids;
+
+
+
+</pre>
+</body>
+</html>
