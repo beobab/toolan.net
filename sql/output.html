@@ -7,24 +7,26 @@
     <script src="script.js"></script>
   </head>
 <body>
+<div id="targetDiv"></div>
 <pre id="sourceMarkdown">
 Add a new row in SQL, and get the identity
 ==========================================
 
-CREATE TABLE mytable (
-	id int identity(1,1) NOT NULL,
-	col1 nvarchar(10) NULL
-);
+    CREATE TABLE mytable (
+    	id int identity(1,1) NOT NULL,
+    	col1 nvarchar(10) NULL
+    );
 
 
 tl;dr
-DECLARE @ids TABLE (id int)
-INSERT mytable (col1)
-SELECT name 
-    OUTPUT INSERTED.id INTO @ids
-FROM (VALUES ('mo'), ('abel'), ('obed'), ('grace'), ('charles'), ('zephania'), ('Xia')
-) AS _(name);
-SELECT * FROM @ids;
+
+    DECLARE @ids TABLE (id int)
+    INSERT mytable (col1)
+    SELECT name 
+        OUTPUT INSERTED.id INTO @ids
+    FROM (VALUES ('mo'), ('abel'), ('obed'), ('grace'), ('charles'), ('zephania'), ('Xia')
+    ) AS _(name);
+    SELECT * FROM @ids;
 
 
 Longer version for patient, wise, clever folk:
@@ -35,15 +37,15 @@ MAX
 
 I've often seen folk getting the newly inserted row like this:
 
-INSERT mytable (col1) VALUES ('bob');
-SELECT max(id) FROM mytable;
+    INSERT mytable (col1) VALUES ('bob');
+    SELECT max(id) FROM mytable;
 
 Don't do this. It's bad. If two people insert at the same time, SQL could easily give you back the wrong id.
 
-INSERT mytable (col1) VALUES ('bob');
-                                                 INSERT mytable(col1) VALUES ('cyril');
-SELECT max(id) FROM mytable;
-                                                 SELECT max(id) FROM mytable;
+    INSERT mytable (col1) VALUES ('bob');
+                                                     INSERT mytable(col1) VALUES ('cyril');
+    SELECT max(id) FROM mytable;
+                                                     SELECT max(id) FROM mytable;
 
 Boom. You've both got cyril's id as the result of your insert.
 
@@ -53,50 +55,52 @@ Boom. You've both got cyril's id as the result of your insert.
 
 So people learned to use @@IDENTITY, which returns the last identity column your connection has inserted.
 
-INSERT mytable (col1) VALUES ('bob');
-SELECT @@IDENTITY;
+    INSERT mytable (col1) VALUES ('bob');
+    SELECT @@IDENTITY;
 
 But that had problems of it's own.
 
 Consider the following table and trigger:
 
-CREATE TABLE myauditlog (
-	auditId int IDENTITY(1000, 1),
-	auditCol1 nvarchar(10) NULL,
-	auditCreateDate datetime DEFAULT (getutcdate())
-);
+    CREATE TABLE myauditlog (
+    	auditId int IDENTITY(1000, 1),
+    	auditCol1 nvarchar(10) NULL,
+    	auditCreateDate datetime DEFAULT (getutcdate())
+    );
 
-CREATE TRIGGER auditTrigger ON mytable
-FOR INSERT
-AS
-INSERT myauditlog (auditCol1)
-SELECT col1 FROM INSERTED;
+    CREATE TRIGGER auditTrigger ON mytable
+    FOR INSERT
+    AS
+    INSERT myauditlog (auditCol1)
+    SELECT col1 FROM INSERTED;
 
 Now when jonny insert puts his value in, he gets an entirely different id, which might not even exist in
 the table he's inserting in. The last identity he inserted was in the trigger (which starts at 1000).
 
-INSERT mytable (col1) VALUES ('jonny');
-SELECT @@IDENTITY;
+    INSERT mytable (col1) VALUES ('jonny');
+    SELECT @@IDENTITY;
 
 
 IDENT_CURRENT
 -------------
 
+Don't even go here. This is almost as bad as MAX.
+
 It returns the last created id for any table you specify, regardless of whether it was you, your boss, 
 uncle cobley, or a small hairy creature from alpha centaurii.
 
-SELECT IDENT_CURRENT ('mytable');  
+    SELECT IDENT_CURRENT ('mytable');  
 
-We don't even go here. This is almost as bad as MAX.
-
+You don't even need to have done an insert on the table. Use this wisely, but not for finding out which 
+row you just inserted. It's not a good tool for that. It's a hammer, and you need tweezers.
 
 SCOPE_IDENTITY
 --------------
 
 Finally, we get one that is pretty darn reliable. It's safe to use this one.
 
-INSERT mytable VALUES ('rosie');
-SELECT SCOPE_IDENTITY()
+    INSERT mytable VALUES ('rosie');
+    SELECT SCOPE_IDENTITY()
 
 Historically, it failed as a result of a bug in SQL some time between 2005 and 2008 (I'm hazy on the details, 
 but it was a long time ago, and they fixed it), where it could return wrong result if it ran with a parallel 
@@ -104,6 +108,9 @@ query plan, and you could get round it by using the (maxdop 1) query hint.
 
 But that doesn't allow for multiple row inserts. How do you get a list of inserted ids?
 
+
+Is that your final answer?
+==========================
 
 OUTPUT CLAUSE
 -------------
@@ -113,48 +120,50 @@ top of the page, you might have guessed where I was going. Because you're very c
 
 The idea is: You have a separate table ready to take ids.
 
-DECLARE @ids TABLE (
-	insertedId int,
-	insertedCol1 nvarchar(10)
-);
+    DECLARE @ids TABLE (
+    	insertedId int,
+    	insertedCol1 nvarchar(10)
+    );
 
 You do the insert, and have access to the special INSERTED table which exists for triggers.
 
-INSERT mytable (col1)
-SELECT name 
-    OUTPUT INSERTED.id, INSERTED.col1 INTO @ids (insertedId, insertedCol1)
-FROM (
-    VALUES ('mo'), ('abel'), ('obed'), ('grace'), ('charles'), ('zephania'), ('Xia')
-) AS _(name);
-
-SELECT * FROM @ids;
+    INSERT mytable (col1)
+    SELECT name 
+        OUTPUT INSERTED.id, INSERTED.col1 INTO @ids (insertedId, insertedCol1)
+    FROM (
+        VALUES ('mo'), ('abel'), ('obed'), ('grace'), ('charles'), ('zephania'), ('Xia')
+    ) AS _(name);
+    
+    SELECT * FROM @ids;
 
 You can fill in a table variable or a new table with the values. I'm using a table variable because I can.
 
 If you don't specify the columns in your table, make sure it's got the same number of columns as you output.
 
-DECLARE @ids TABLE (id int);
-INSERT mytable (col1)
-SELECT name 
-    OUTPUT INSERTED.id INTO @ids
-FROM (
-    VALUES ('mo'), ('abel'), ('obed'), ('grace'), ('charles'), ('zephania'), ('Xia')
-) AS _(name);
-SELECT * FROM @ids;
+    DECLARE @ids TABLE (id int);
+    INSERT mytable (col1)
+    SELECT name 
+        OUTPUT INSERTED.id INTO @ids
+    FROM (
+        VALUES ('mo'), ('abel'), ('obed'), ('grace'), ('charles'), ('zephania'), ('Xia')
+    ) AS _(name);
+    SELECT * FROM @ids;
+	
+And in the words of the immortal bard "That's all I have to say about that."
 
 </pre>
-<div id="targetDiv"></div>
 </body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-function run() {
-  var text = document.getElementById('sourceMarkdown').innerHTML,
-      target = document.getElementById('targetDiv'),
-      converter = new showdown.Converter(),
-      html = converter.makeHtml(text);
+var main = function() {
+	var sourceMarkdown = document.getElementById('sourceMarkdown');
+	var text = sourceMarkdown.innerHTML;
+    var target = document.getElementById('targetDiv');
+    var html = marked(text);
     
     target.innerHTML = html;
+	sourceMarkdown.style.display = 'none';
 };
-run();
+main();
 </script>
 </html>
