@@ -7,7 +7,7 @@
     <script src="script.js"></script>
   </head>
 <body>
-<pre>
+<pre id="sourceMarkdown">
 Add a new row in SQL, and get the identity
 ==========================================
 
@@ -142,8 +142,19 @@ FROM (
 ) AS _(name);
 SELECT * FROM @ids;
 
-
-
 </pre>
+<div id="targetDiv"></div>
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
+<script>
+function run() {
+  var text = document.getElementById('sourceMarkdown').innerHTML,
+      target = document.getElementById('targetDiv'),
+      converter = new showdown.Converter(),
+      html = converter.makeHtml(text);
+    
+    target.innerHTML = html;
+};
+run();
+</script>
 </html>
