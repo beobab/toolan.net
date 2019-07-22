@@ -129,14 +129,22 @@ As you know, he is a fine developer, and often puts restricted characters in his
 So we've got it saying "Customer_01Customer_02..Customer_13" now. Let's make it a little more useful.
 
     SELECT (
-	    SELECT 'SELECT * FROM ' + name + '.dbo.Option'
+	    SELECT ' UNION ALL SELECT * FROM ' + name + '.dbo.Option'
 	    FROM sysdatabases
 	    FOR XML PATH(''), type
 	).value('/', 'nvarchar(max)')
 
-Now it says "SELECT * FROM Customer_01.dbo.OptionSELECT * FROM Customer_02.dbo.OptionSELECT..."
+Now it says " UNION ALL SELECT * FROM Customer_01.dbo.Option UNION ALL SELECT * FROM Customer_02.dbo.Option UNION ALL SELECT..."
 
+Let's chop off the first 11 characters:
 
+	SELECT substring((
+	    SELECT ' UNION ALL SELECT * FROM ' + name + '.dbo.Option'
+	    FROM sysdatabases
+	    FOR XML PATH(''), type
+	).value('/', 'nvarchar(max)'), 12, 99999);
+	
+	
 
 </pre>
 <footer></footer>
