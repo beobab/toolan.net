@@ -1,0 +1,15 @@
+body {
+	font-family: Verdana;
+	margin-left:20px;
+}
+code {
+	color: #0000cc;
+	background-color: #ffffdd;
+	display: block;
+	padding: 10px;
+	font-family: ProfontWindows, Courier New, monospace;
+	font-size: 9pt;
+}
+footer {
+	height: 250px;
+}

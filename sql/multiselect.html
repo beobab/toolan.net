@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Sql XML Path Multiselection</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+<body>
+<div id="targetDiv"></div>
+<pre id="sourceMarkdown">
+Single table from lots of databases
+===============
+
+Have you ever wanted to select something from all of the databases on a single server, 
+but you need them all into a single table? Wow, are you ever in luck! That's exactly what
+I wanted to show you today! Spooky.
+
+For those of you who are only here for the code, I present this lovely snippet for you to 
+copy and go on your merry way, bereft of understanding, happy in the knowledge that you 
+have found what you need.
+
+    DECLARE @sql nvarchar(max); 
+    SELECT @sql = substring((
+    	SELECT ' UNION ALL SELECT ''' + name + ''' AS dbname, OptionValue FROM ' + name + '.dbo.Option WHERE OptionId = 12'
+    	FROM master.dbo.sysdatabases 
+    	WHERE name LIKE ('Customer[_]%')
+    	AND HAS_PERMS_BY_NAME(name + '.dbo.Option', 'OBJECT', 'SELECT') = 1 
+    	FOR XML PATH(''), type).value('/', 'nvarchar(max)')
+    , 12, 99999); 
+    EXEC (@sql);
+
+Which gives you:
+
+    +-------------+-------------|
+    | dbname      | OptionValue |
+    --------------+-------------|
+    | Customer_01 | 129         |
+    | Customer_02 | 128         |
+    | Customer_03 | 129         |
+    | Customer_04 | 128         |
+    | Customer_05 | 128         |
+    | Customer_06 | 128         |
+    | Customer_07 | 128         |
+    | Customer_08 | 129         |
+    | Customer_09 | 128         |
+    | Customer_10 | 128         |
+    | Customer_11 | 128         |
+    | Customer_12 | 128         |
+    | Customer_13 | 127         |
+    +-------------+-------------+
+
+
+For those who say "Why not just use sp_MSForEachDb?" I say "By all means. Go forth and do so."
+
+All the clever, good looking, wise and appreciative folk still with us? Good.
+
+This query takes all databases on the current server, checks to see if they have an Option table 
+that you can select from, finds OptionId 12 in each one, and returns a single table with the results. 
+sp_MSForEachDb gives you a different table for each database, which may be what you want. It isn't 
+what I wanted when I wrote this.
+
+We'll split it up here:
+
+The outside first, because well, find something that's easy to explain and go from there?
+
+    DECLARE @sql nvarchar(max); 
+    SELECT @sql = (some string)
+	EXEC (@sql);
+
+This puts some stuff into a (very long) string variable, and runs it. If this doesn't work, then this 
+whole method probably isn't for you.
+
+In to the middle for a bit (I like jumping around).
+
+	SELECT (some string)
+    FROM master.dbo.sysdatabases 
+    WHERE name LIKE ('Customer[_]%')
+    AND HAS_PERMS_BY_NAME(name + '.dbo.Option', 'OBJECT', 'SELECT') = 1 
+
+This finds all the databases which have an object called Option that you (the user running this query) 
+have permission to select from. Note: name + 'dbo.Option' is significant. That makes sure that each 
+database gets checked, and not just the database you're running in currently (which could easily be master).
+
+    SELECT (
+	    SELECT (some text)
+	    (some query)
+	    FOR XML PATH(''), type
+	).value('/', 'nvarchar(max)')
+
+This returns '(some text)(some text)...(some text)'
+
+This is the bit that typically makes people say "I'm sorry, what? How?".
+
+It's a convert into XML and then extract the root into a string which has the "side effect" of concatenating
+all the items returned together into one long string.
+
+I'll go a bit slower.
+
+    SELECT name FROM sysdatabases
+	FOR XML PATH(''), type
+	
+That returns an XML object that looks like this: 
+
+    <name>master</name>
+	<name>msdb</name>
+	<name>tempdb</name>
+	<name>Customer_01</name>
+	...
+	<name>Customer_13</name>
+
+Then we ask sql to give us the value of the root (/) as an 'nvarchar(max)'
+
+	DECLARE @xml XML = '<name>master</name>
+						<name>msdb</name>
+						<name>tempdb</name>
+						<name>Customer_01</name>
+						...
+						<name>Customer_13</name>';
+
+	SELECT @xml.value('/', 'nvarchar(max)');
+	
+As you can see (you are trying this as we go alone, aren't you?), spaces are not inserted between each item, 
+but you should see that escape characters which XML would normally escape are correctly sent back to you. 
+This is a good thing, and will stand you in good stead when ジョナサントゥーラン wants his own database. 
+As you know, he is a fine developer, and often puts restricted characters in his database names to help you learn.
+
+[https://stackoverflow.com/questions/1091945/what-characters-do-i-need-to-escape-in-xml-documents]
+
+So we've got it saying "Customer_01Customer_02..Customer_13" now. Let's make it a little more useful.
+
+    SELECT (
+	    SELECT 'SELECT * FROM ' + name + '.dbo.Option'
+	    FROM sysdatabases
+	    FOR XML PATH(''), type
+	).value('/', 'nvarchar(max)')
+
+Now it says "SELECT * FROM Customer_01.dbo.OptionSELECT * FROM Customer_02.dbo.OptionSELECT..."
+
+
+
+</pre>
+<footer></footer>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="script.js"></script>
+<script>
+	markdownToTargetDiv();
+</script>
+</html>
